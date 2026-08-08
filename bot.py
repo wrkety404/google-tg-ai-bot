@@ -1,4 +1,4 @@
- #!/usr/bin/env python3
+мы #!/usr/bin/env python3
 # bot.py – Gmail Factory (Telegram bot) with ChatGPT + proxy rotation
 import asyncio
 import logging
@@ -22,7 +22,7 @@ import requests
 # ============================================================
 #  КОНФИГ (твои данные)
 # ============================================================
-BOT_TOKEN = "8787576545:AAHn0QempeRNbHS7_QF5TrJWtKYjf1E-ar4"
+BOT_TOKEN = ""
 ADMIN_ID = 7820732737  # твой Telegram ID
 OPENAI_API_KEY = "sk-abcdef1234567890abcdef1234567890abcdef12"  # первый ключ из списка
 
