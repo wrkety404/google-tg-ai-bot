@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-# bot.py – Telegram-бот для массового создания Gmail с ChatGPT + прокси
+ #!/usr/bin/env python3
+# bot.py – Gmail Factory (Telegram bot) with ChatGPT + proxy rotation
 import asyncio
 import logging
 import json
@@ -19,16 +19,17 @@ from selenium.webdriver.chrome.options import Options
 import openai
 import requests
 
-# ===== КОНФИГ (замени на свои) =====
-BOT_TOKEN = "8787576545:AAG84EOnih4oKVU-nzjVWhKCFLauK3mFd_g"
- OPENAI_API_KEY = "sk-abcdef1234567890abcdef1234567890abcdef12"
-ADMIN_ID=7820732737  #твой Telegram ID
+# ============================================================
+#  КОНФИГ (твои данные)
+# ============================================================
+BOT_TOKEN = "8787576545:AAHn0QempeRNbHS7_QF5TrJWtKYjf1E-ar4"
+ADMIN_ID = 7820732737  # твой Telegram ID
+OPENAI_API_KEY = "sk-abcdef1234567890abcdef1234567890abcdef12"  # первый ключ из списка
 
-# Список прокси (ip:port или user:pass@ip:port)
+# Список прокси – добавь свои (ip:port или user:pass@ip:port)
 PROXY_LIST = [
-    "proxy1:8080",
-    "proxy2:8080",
-    # ...
+    # "proxy1:8080",
+    # "proxy2:8080",
 ]
 
 DB_PATH = "accounts.db"
@@ -39,7 +40,9 @@ dp = Dispatcher()
 openai.api_key = OPENAI_API_KEY
 logging.basicConfig(level=logging.INFO)
 
-# ===== БАЗА ДАННЫХ =====
+# ============================================================
+#  БАЗА ДАННЫХ
+# ============================================================
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
@@ -72,7 +75,9 @@ def get_stats():
     conn.close()
     return total
 
-# ===== РОТАЦИЯ ПРОКСИ =====
+# ============================================================
+#  РОТАЦИЯ ПРОКСИ
+# ============================================================
 class ProxyManager:
     def __init__(self, proxies):
         self.proxies = proxies
@@ -86,7 +91,9 @@ class ProxyManager:
 
 proxy_manager = ProxyManager(PROXY_LIST)
 
-# ===== ГЕНЕРАЦИЯ ДАННЫХ ЧЕРЕЗ CHATGPT =====
+# ============================================================
+#  ГЕНЕРАЦИЯ ДАННЫХ ЧЕРЕЗ CHATGPT
+# ============================================================
 async def generate_user_data():
     prompt = """
     Сгенерируй данные для нового пользователя Google (США, реальное имя).
@@ -102,7 +109,7 @@ async def generate_user_data():
         )
         return json.loads(resp.choices[0].message.content)
     except:
-        # Резерв
+        # Резерв (если ChatGPT недоступен)
         return {
             "first_name": random.choice(["John","Emma","Michael","Olivia"]),
             "last_name": random.choice(["Smith","Johnson","Williams","Brown"]),
@@ -112,7 +119,9 @@ async def generate_user_data():
             "interests": ["music", "sports"]
         }
 
-# ===== СОЗДАНИЕ АККАУНТА (Selenium) =====
+# ============================================================
+#  СОЗДАНИЕ АККАУНТА (Selenium)
+# ============================================================
 async def create_account(proxy_str):
     user = await generate_user_data()
     username_base = f"{user['first_name'].lower()}{user['last_name'].lower()}"
@@ -223,15 +232,17 @@ async def create_account(proxy_str):
         if driver:
             driver.quit()
 
-# ===== КОМАНДЫ БОТА =====
+# ============================================================
+#  КОМАНДЫ ТЕЛЕГРАМ-БОТА
+# ============================================================
 @dp.message(Command("start"))
 async def start_cmd(msg: types.Message):
     await msg.answer(
         "🤖 **Gmail Factory Bot**\n"
-        "/create <количество> – до 10 аккаунтов\n"
+        "/create <количество> – создать до 10 аккаунтов\n"
         "/stats – статистика\n"
         "/set_proxy <ip:port> – добавить прокси\n"
-        "/list_proxy – список прокси"
+        "/list_proxy – показать прокси"
     )
 
 @dp.message(Command("create"))
@@ -258,7 +269,7 @@ async def create_cmd(msg: types.Message):
         status = await msg.answer(f"🔄 {i+1}/{count}...")
         proxy = proxy_manager.next()
         if not proxy:
-            await status.edit_text("❌ Нет прокси.")
+            await status.edit_text("❌ Нет прокси. Добавь через /set_proxy")
             break
         acc = await create_account(proxy)
         if acc:
@@ -266,7 +277,7 @@ async def create_cmd(msg: types.Message):
             save_account(acc['email'], acc['password'], acc['full_name'], acc['proxy'])
             await status.edit_text(f"✅ {acc['email']}")
         else:
-            await status.edit_text(f"❌ Ошибка, пробую другой...")
+            await status.edit_text(f"❌ Ошибка, пробую другой прокси...")
             proxy = proxy_manager.next()
             if proxy:
                 acc = await create_account(proxy)
@@ -305,6 +316,9 @@ async def list_proxy_cmd(msg: types.Message):
     else:
         await msg.answer("❌ Прокси не добавлены.")
 
+# ============================================================
+#  ЗАПУСК
+# ============================================================
 async def main():
     init_db()
     await dp.start_polling(bot)
