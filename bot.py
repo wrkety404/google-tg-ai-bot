@@ -20,9 +20,9 @@ import openai
 import requests
 
 # ===== КОНФИГ (замени на свои) =====
-BOT_TOKEN = "ВАШ_ТОКЕН_ОТ_BOTFATHER"
-OPENAI_API_KEY = "ВАШ_КЛЮЧ_OPENAI"
-ADMIN_ID = 123456789  # твой Telegram ID
+BOT_TOKEN = "8787576545:AAG84EOnih4oKVU-nzjVWhKCFLauK3mFd_g"
+ OPENAI_API_KEY = "sk-abcdef1234567890abcdef1234567890abcdef12"
+ADMIN_ID=7820732737  #твой Telegram ID
 
 # Список прокси (ip:port или user:pass@ip:port)
 PROXY_LIST = [
